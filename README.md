@@ -6,22 +6,29 @@ A 7-day bouldering conditions forecast. Each day at each area is rated **good**,
 
 **Live:** [jackvermaak.com/frictionforecast](https://jackvermaak.com/frictionforecast/) · [How it works](https://jackvermaak.com/frictionforecast/about)
 
-| Area | Rock | Hours scored |
+15 areas in seven countries, with a filter by country:
+
+| Country | Areas | Rock |
 | --- | --- | --- |
-| Rocklands, The Pass | Sandstone | 10:00–17:00 |
-| Magic Wood | Gneiss | 08:00–20:00 |
-| Fontainebleau, Bas Cuvier | Sandstone | 08:00–19:00 |
-| Avalonia, Herdecke | Sandstone | 08:00–20:00 |
-| Glees, Eifel | Basalt | 09:00–19:00 |
-| Göttinger Wald, Wiesental | Sandstone | 08:00–20:00 |
+| South Africa | Rocklands, Topside (Cape Town) | Sandstone |
+| Switzerland | Magic Wood, Cresciano, Chironico, Brione, Val Bavona | Gneiss |
+| | Sustenpass | Granite |
+| Germany | Avalonia, Göttinger Wald | Sandstone |
+| | Glees | Basalt |
+| France | Fontainebleau | Sandstone |
+| Austria | Zillertal | Gneiss |
+| Italy | Val Masino | Granite |
+| Spain | Albarracín | Sandstone |
+
+Each area's coordinates, scored hours and season are in [`areas.js`](public/frictionforecast/areas.js). To add an area, add one entry there; the request, the scoring and the filter pick it up.
 
 ## How it runs
 
 It's a static page, with no server, no build step and no dependencies.
 
-1. The browser makes **one** request to the [Open-Meteo](https://open-meteo.com/) forecast API for all six areas: 3 days of history for the wetness model, plus 7 days ahead.
+1. The browser makes **one** request to the [Open-Meteo](https://open-meteo.com/) forecast API for all areas: 3 days of history for the wetness model, plus 7 days ahead.
 2. `score.js` scores every hour and rates each local day by its best 3-hour window.
-3. The raw answer is kept in `localStorage` for an hour. With no signal, the page shows the last forecast, says so, and flags it once it's over 12 hours old.
+3. The raw answer is kept in `localStorage` for an hour, along with the chosen country (also in the URL, e.g. `?country=switzerland`, so a filtered view can be shared). With no signal, the page shows the last forecast, says so, and flags it once it's over 12 hours old.
 
 The original plan had a Cloudflare Worker that fetched every 3 hours into KV, but jackvermaak.com is a static Cloudflare Pages site. Fetching from the browser means there's nothing to deploy or keep running. Open-Meteo allows cross-origin requests, and one request per visit stays well inside the free tier.
 

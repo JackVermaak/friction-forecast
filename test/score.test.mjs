@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   ROCK, DEFAULT_PROFILE, profileFor, ramp, band, windScore, wetness, hourScore, rateDays, buildForecast,
 } from '../public/frictionforecast/score.js';
-import { AREAS } from '../public/frictionforecast/areas.js';
+import { AREAS, COUNTRIES, countryKey } from '../public/frictionforecast/areas.js';
 import { forecastUrl, archiveUrl, fetchForecast, PAST_DAYS } from '../public/frictionforecast/openmeteo.js';
 
 // `days` days of hourly weather from 2026-11-01, starting from a cool, dry, breezy, cloudy
@@ -170,7 +170,7 @@ test('buildForecast keeps area order and drops the history days', () => {
   const areas = AREAS.slice(0, 2);
   const raw = areas.map(() => ({ hourly: fixture(10) }));
   const f = buildForecast(raw, areas, PAST_DAYS);
-  assert.deepEqual(f.areas.map((a) => a.id), ['rocklands', 'magic-wood']);
+  assert.deepEqual(f.areas.map((a) => a.id), ['rocklands', 'topside']);
   assert.equal(f.areas[0].days.length, 7);
   assert.equal(f.areas[0].days[0].date, '2026-11-04');
   assert.ok(!Number.isNaN(Date.parse(f.updatedAt)));
@@ -190,6 +190,8 @@ test('every area has a known rock, valid hours and a unique id', () => {
     assert.ok(ROCK[a.rock], a.id);
     assert.ok(a.hours[0] >= 0 && a.hours[1] <= 24 && a.hours[1] - a.hours[0] >= 3, a.id);
     assert.ok(Math.abs(a.lat) <= 90 && Math.abs(a.lon) <= 180, a.id);
+    assert.ok(a.country && a.place && a.seasonText, a.id);
+    assert.ok(a.season.length && a.season.every((m) => m >= 1 && m <= 12), a.id);
     assert.ok(!ids.has(a.id));
     ids.add(a.id);
   }
@@ -199,7 +201,7 @@ test('one Open-Meteo request covers every area, in order', () => {
   const u = new URL(forecastUrl(AREAS));
   assert.equal(u.searchParams.get('latitude').split(',').length, AREAS.length);
   assert.equal(u.searchParams.get('latitude').split(',')[0], String(AREAS[0].lat));
-  assert.equal(u.searchParams.get('timezone').split(',')[1], 'Europe/Zurich');
+  assert.equal(u.searchParams.get('timezone').split(',')[2], 'Europe/Zurich');
   assert.equal(u.searchParams.get('past_days'), '3');
   assert.equal(u.searchParams.get('forecast_days'), '7');
   const a = new URL(archiveUrl(AREAS.slice(0, 1), '2026-08-12', '2026-08-31'));
@@ -214,4 +216,16 @@ test('a single-area answer is wrapped in an array', async () => {
   assert.equal(out.length, 1);
   const bad = async () => ({ ok: false, status: 429, text: async () => 'limit' });
   await assert.rejects(fetchForecast(AREAS, bad), /429/);
+});
+
+test('countries: each listed once, in first-appearance order, with areas grouped together', () => {
+  assert.deepEqual(COUNTRIES.map((c) => c.name),
+    ['South Africa', 'Switzerland', 'Germany', 'France', 'Austria', 'Italy', 'Spain']);
+  assert.equal(COUNTRIES.reduce((n, c) => n + c.count, 0), AREAS.length);
+  assert.equal(COUNTRIES.find((c) => c.name === 'Switzerland').count, 6);
+  // Grouped: once a country's run of areas ends, it never comes back.
+  const runs = AREAS.map((a) => a.country).filter((c, i, all) => c !== all[i - 1]);
+  assert.equal(runs.length, COUNTRIES.length);
+  assert.equal(countryKey('South Africa'), 'south-africa');
+  for (const c of COUNTRIES) assert.match(c.key, /^[a-z]+(-[a-z]+)*$/);
 });
