@@ -63,6 +63,7 @@ public/frictionforecast/
   areas.js      areas, rock types, scored hours, seasons
   openmeteo.js  request URLs and fetch helpers
 scripts/backtest.mjs   score past days from the Open-Meteo archive
+scripts/stamp.mjs      content hashes in the pages, so browsers never mix old and new files
 test/score.test.mjs    unit tests on hand-built hourly fixtures
 ```
 
@@ -72,7 +73,8 @@ Needs Node 18 or newer. There's nothing to install.
 
 ```bash
 npm test        # scoring tests
-npm run check   # syntax check
+npm run check   # syntax check, and that the pages' cache-busting hashes are current
+npm run stamp   # rewrite those hashes after changing any file in public/frictionforecast
 npm run serve   # http://localhost:8790/frictionforecast/
 ```
 
@@ -84,7 +86,7 @@ node scripts/backtest.mjs magic-wood 2026-08-12 2026-08-31
 
 ## Publishing
 
-The site copy lives in the [jackvermaak.com](https://github.com/JackVermaak/jackvermaak.com) repo. After changing anything under `public/frictionforecast`, run `python3 tools/sync_apps.py` there, then commit and push. Cloudflare Pages deploys on push.
+The site copy lives in the [jackvermaak.com](https://github.com/JackVermaak/jackvermaak.com) repo. After changing anything under `public/frictionforecast`, run `npm run stamp` here and commit. Then run `python3 tools/sync_apps.py` there, then commit and push. Cloudflare Pages deploys on push.
 
 ## Credits
 

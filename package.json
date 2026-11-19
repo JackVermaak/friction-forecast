@@ -9,8 +9,9 @@
   "type": "module",
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "check": "node --check public/frictionforecast/app.js && node --check scripts/backtest.mjs",
+    "check": "node --check public/frictionforecast/app.js && node --check scripts/backtest.mjs && node scripts/stamp.mjs --check",
     "serve": "python3 -m http.server 8790 --directory public",
-    "backtest": "node scripts/backtest.mjs"
+    "backtest": "node scripts/backtest.mjs",
+    "stamp": "node scripts/stamp.mjs"
   }
 }
