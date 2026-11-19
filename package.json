@@ -1,0 +1,16 @@
+{
+  "name": "friction-forecast",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Friction Forecast: 7-day bouldering conditions for Rocklands, Magic Wood, Fontainebleau and three German areas.",
+  "homepage": "https://jackvermaak.com/frictionforecast/",
+  "author": "Jack Vermaak",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check public/frictionforecast/app.js && node --check scripts/backtest.mjs",
+    "serve": "python3 -m http.server 8790 --directory public",
+    "backtest": "node scripts/backtest.mjs"
+  }
+}
